@@ -168,8 +168,22 @@ class ReviewerTests(unittest.TestCase):
         )
         kwargs = client.chat.completions.create.call_args.kwargs
         self.assertNotIn("tools", kwargs)
+        self.assertEqual(kwargs["reasoning_effort"], self.policy["reasoning_effort"])
+        self.assertEqual(kwargs["max_completion_tokens"], 2048)
         self.assertTrue(kwargs["response_format"]["json_schema"]["strict"])
         self.assertIn("untrusted_diff", kwargs["messages"][1]["content"])
+        client.reset_mock()
+        for effort in ["unsupported", "", []]:
+            with self.assertRaisesRegex(ReviewError, "Unsupported reasoning effort"):
+                review_with_groq(
+                    self.safe,
+                    {**self.policy, "reasoning_effort": effort},
+                    self.schema,
+                    self.prompt,
+                    self.changes,
+                    client,
+                )
+        client.chat.completions.create.assert_not_called()
 
     def test_truncated_output_fails(self):
         client = Mock()

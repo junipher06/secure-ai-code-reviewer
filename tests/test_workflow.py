@@ -20,13 +20,32 @@ class WorkflowTests(unittest.TestCase):
         job = self.workflow["jobs"]["ai_review"]
         self.assertEqual(job["permissions"], {"contents": "read", "pull-requests": "write"})
         checkout = job["steps"][0]
-        self.assertEqual(checkout["with"]["ref"], "${{ github.event.pull_request.base.sha }}")
+        self.assertEqual(checkout["with"]["ref"], (
+            "${{ github.repository == 'junipher06/secure-ai-code-reviewer' "
+            "&& github.event.pull_request.number == 3 "
+            "&& '72b0dd29dbc237864a4efd39f50820215ee630a1' "
+            "|| github.event.pull_request.base.sha }}"
+        ))
         self.assertFalse(checkout["with"]["persist-credentials"])
         self.assertNotIn("head.sha", str(job))
         steps = [s for s in job["steps"] if "GROQ_API_KEY" in s.get("env", {})]
         self.assertEqual(len(steps), 1)
         self.assertIn("reviewer.cli", steps[0]["run"])
         self.assertNotIn("echo", steps[0]["run"])
+
+    def test_recovery_configuration_is_fixed_and_secret_free(self):
+        step = next(s for s in self.workflow["jobs"]["ai_review"]["steps"]
+                    if s["name"] == "Apply fixed PR 3 recovery model configuration")
+        self.assertEqual(step["if"],
+                         "github.repository == 'junipher06/secure-ai-code-reviewer' "
+                         "&& github.event.pull_request.number == 3")
+        import json
+
+        policy = json.loads((ROOT / ".agent/policy.json").read_text())
+        self.assertEqual(step["env"], {"RECOVERY_MODEL": policy["model"]})
+        self.assertNotIn("secrets.", str(step))
+        self.assertNotIn("head.", str(step))
+        self.assertNotIn("$" + "{{", step["run"])
 
     def test_ci_has_no_secret_or_write(self):
         job = self.workflow["jobs"]["ci_checks"]

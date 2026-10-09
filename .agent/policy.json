@@ -1,6 +1,7 @@
 {
   "version": 1,
-  "model": "openai/gpt-oss-20b",
+  "model": "openai/gpt-oss-120b",
+  "reasoning_effort": "low",
   "max_diff_bytes": 8000,
   "required_checks": [
     "CI Checks",
