@@ -1,6 +1,7 @@
 {
   "version": 1,
   "model": "openai/gpt-oss-20b",
+  "reasoning_effort": "low",
   "max_diff_bytes": 8000,
   "required_checks": [
     "CI Checks",
@@ -64,6 +65,5 @@
   "max_completion_tokens": 2048,
   "request_timeout_seconds": 45,
   "max_retries": 0,
-  "project_context": "Python src layout; unittest runner: python -m unittest discover -s tests -v. Demo imports: from customer_support.routing import route_ticket; from customer_support.security_rules import needs_human_review. Suggested tests must include imports and be self-contained, executable unittest test cases.",
-  "reasoning_effort": "low"
+  "project_context": "Python src layout; unittest runner: python -m unittest discover -s tests -v. Demo imports: from customer_support.routing import route_ticket; from customer_support.security_rules import needs_human_review. Suggested tests must include imports and be self-contained, executable unittest test cases."
 }
