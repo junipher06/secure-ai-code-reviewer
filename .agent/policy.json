@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "model": "openai/gpt-oss-20b",
+  "max_diff_bytes": 8000,
+  "required_checks": [
+    "CI Checks",
+    "AI Review",
+    "AI Review Gate"
+  ],
+  "source_paths": [
+    "src/**"
+  ],
+  "test_paths": [
+    "tests/test_*.py",
+    "tests/**/test_*.py"
+  ],
+  "sensitive_paths": [
+    "src/auth*",
+    "src/security*",
+    "src/payment*",
+    "src/pii*",
+    "src/**/auth*",
+    "src/**/security*",
+    "src/**/payment*",
+    "src/**/pii*",
+    "infra/**",
+    ".github/**",
+    ".agent/**",
+    "pyproject.toml",
+    "src/reviewer/**"
+  ],
+  "trusted_reviewers": [
+    "pwg011"
+  ],
+  "test_expectations": "Source changes require added/updated tests. This heuristic does not prove adequate coverage.",
+  "risky_patterns": [
+    {
+      "id": "unsafe-eval",
+      "regex": "\\beval\\s*\\(",
+      "message": "Dynamic eval is prohibited."
+    },
+    {
+      "id": "disabled-tls",
+      "regex": "\\bverify\\s*=\\s*False\\b",
+      "message": "TLS verification must remain enabled."
+    },
+    {
+      "id": "shell-execution",
+      "regex": "\\bshell\\s*=\\s*True\\b|\\bos\\.system\\s*\\(",
+      "message": "Shell execution requires redesign and review."
+    },
+    {
+      "id": "credential-literal",
+      "regex": "(?i)\\b(?:api_key|password|secret|token)\\s*=\\s*[\"\\x27][A-Za-z0-9_+/=-]{16,}[\"\\x27]|\\b(?:gsk_|ghp_|github_pat_)[A-Za-z0-9_]{20,}",
+      "message": "Possible hardcoded credential. Remove and rotate any real exposed credential."
+    },
+    {
+      "id": "destructive-infra",
+      "regex": "\\bterraform\\s+destroy\\b|\\bkubectl\\s+delete\\b|\\brm\\s+-rf\\b",
+      "message": "Destructive infrastructure command prohibited; no label bypass."
+    }
+  ],
+  "max_request_bytes": 24000,
+  "max_completion_tokens": 2048,
+  "request_timeout_seconds": 45,
+  "max_retries": 0,
+  "project_context": "Python src layout; unittest runner: python -m unittest discover -s tests -v. Demo imports: from customer_support.routing import route_ticket; from customer_support.security_rules import needs_human_review. Suggested tests must include imports and be self-contained, executable unittest test cases."
+}

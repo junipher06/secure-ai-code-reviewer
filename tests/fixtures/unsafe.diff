@@ -1,0 +1,7 @@
+diff --git a/src/example.py b/src/example.py
+--- a/src/example.py
++++ b/src/example.py
+@@ -0,0 +1,3 @@
++# SYNTHETIC: deliberately unsafe code; never executed.
++def evaluate(value):
++    return eval(value)

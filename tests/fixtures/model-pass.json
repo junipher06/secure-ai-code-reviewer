@@ -1,0 +1,20 @@
+{
+  "summary": [
+    "Synthetic review response for offline testing; no AI was called."
+  ],
+  "risk_level": "LOW",
+  "findings": [],
+  "required_actions": [],
+  "suggested_improvements": [],
+  "test_plan": [
+    "Test normal and empty input."
+  ],
+  "suggested_tests": [
+    {
+      "path": "tests/test_example.py",
+      "code": "def test_empty():\n    assert normalize(\"\") == \"\"\n",
+      "instructions": "Synthetic suggestion. Adapt imports and review before using."
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -1,0 +1,12 @@
+diff --git a/src/example.py b/src/example.py
+--- a/src/example.py
++++ b/src/example.py
+@@ -0,0 +1,2 @@
++def normalize(value):
++    return value.strip()
+diff --git a/tests/test_example.py b/tests/test_example.py
+--- a/tests/test_example.py
++++ b/tests/test_example.py
+@@ -0,0 +1,2 @@
++def test_normalize():
++    assert normalize(" demo ") == "demo"
