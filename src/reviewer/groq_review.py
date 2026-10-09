@@ -83,6 +83,9 @@ def review_with_groq(
     changes: list[Change],
     client: Any = None,
 ) -> dict[str, Any]:
+    effort = policy.get("reasoning_effort", "low")
+    if not isinstance(effort, str) or effort not in {"low", "medium", "high"}:
+        raise ReviewError("Unsupported reasoning effort; review blocked.")
     payload = json.dumps(
         {
             "untrusted_diff": diff,
@@ -111,6 +114,7 @@ def review_with_groq(
         response = client.chat.completions.create(
             model=policy["model"],
             temperature=0,
+            reasoning_effort=effort,
             max_completion_tokens=policy.get("max_completion_tokens", 2048),
             messages=[
                 {"role": "system", "content": prompt},

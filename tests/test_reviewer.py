@@ -168,6 +168,8 @@ class ReviewerTests(unittest.TestCase):
         )
         kwargs = client.chat.completions.create.call_args.kwargs
         self.assertNotIn("tools", kwargs)
+        self.assertEqual(kwargs["reasoning_effort"], self.policy["reasoning_effort"])
+        self.assertEqual(kwargs["max_completion_tokens"], 2048)
         self.assertTrue(kwargs["response_format"]["json_schema"]["strict"])
         self.assertIn("untrusted_diff", kwargs["messages"][1]["content"])
 
@@ -327,3 +329,19 @@ class BudgetTests(unittest.TestCase):
         with self.assertRaises(ReviewError):
             review_with_groq(diff, policy, schema, prompt, parse_diff(diff), client)
         client.chat.completions.create.assert_not_called()
+
+    def test_invalid_reasoning_effort_never_reaches_api(self):
+        policy, schema, prompt, _ = load_settings(ROOT)
+        client = Mock()
+        diff = (ROOT / "tests/fixtures/safe.diff").read_text()
+        for effort in ["unsupported", "", []]:
+            with self.assertRaisesRegex(ReviewError, "Unsupported reasoning effort"):
+                review_with_groq(
+                    diff,
+                    {**policy, "reasoning_effort": effort},
+                    schema,
+                    prompt,
+                    parse_diff(diff),
+                    client,
+                )
+            client.chat.completions.create.assert_not_called()
