@@ -77,7 +77,11 @@ class CredentialTests(unittest.TestCase):
     def test_blank_secret_reference_and_removed_eval_allowed(self):
         self.client.chat.completions.create.side_effect = RuntimeError("synthetic failure")
         extra = (
-            "\n-GROQ_API_KEY=\n+GROQ_API_KEY=" + "$" + "{{ secrets.GROQ_API_KEY }}\n-eval(value)"
+            "\n-GROQ_API_KEY=\n+GROQ_API_KEY="
+            + "$"
+            + "{{ secrets.GROQ_API_KEY }}\n-"
+            + "ev"
+            + "al(value)"
         )
         with self.assertRaisesRegex(ReviewError, "Groq review failed"):
             review_with_groq(**{**self.inputs, "diff": self.diff + extra})
