@@ -35,6 +35,35 @@ def check_policy(changes: list[Change], policy: dict[str, Any]) -> tuple[list[st
     return list(dict.fromkeys(blockers)), sensitive
 
 
+def screen_credentials(value: Any, policy: dict[str, Any]) -> None:
+    """Screen raw outbound strings, including dictionary keys, without echoing matches."""
+    try:
+        rules = [r for r in policy["risky_patterns"] if r["id"] == "credential-literal"]
+        if len(rules) != 1 or not rules[0]["regex"]:
+            raise ValueError
+        pattern = re.compile(rules[0]["regex"])
+    except (KeyError, TypeError, ValueError, re.error):
+        raise ReviewError(
+            "Credential-screening configuration is invalid; review blocked."
+        ) from None
+
+    def scan(item: Any) -> None:
+        if isinstance(item, str) and pattern.search(item):
+            raise ReviewError(
+                "Credential-like content in review input; Groq request blocked. "
+                "Remove it from the complete diff or trusted input; rotate any real exposed key."
+            )
+        if isinstance(item, dict):
+            for key, child in item.items():
+                scan(key)
+                scan(child)
+        elif isinstance(item, (list, tuple)):
+            for child in item:
+                scan(child)
+
+    scan(value)
+
+
 def owners_for(path: str, content: str) -> set[str]:
     """Restricted CODEOWNERS subset: anchored globs or *, explicit @user owners.
 

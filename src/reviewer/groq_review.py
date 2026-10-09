@@ -8,6 +8,7 @@ from jsonschema import Draft202012Validator
 
 from .diff import Change, safe_path
 from .errors import ReviewError
+from .policy import screen_credentials
 
 
 def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -83,6 +84,21 @@ def review_with_groq(
     changes: list[Change],
     client: Any = None,
 ) -> dict[str, Any]:
+    # Check raw strings before JSON escaping, credential lookup or SDK construction.
+    # Includes the complete diff (deleted/context/metadata), not only parsed additions.
+    screen_credentials(
+        (
+            diff,
+            prompt,
+            schema,
+            policy["model"],
+            policy["sensitive_paths"],
+            policy["test_expectations"],
+            policy.get("project_context", ""),
+            policy.get("max_completion_tokens", 2048),
+        ),
+        policy,
+    )
     payload = json.dumps(
         {
             "untrusted_diff": diff,
